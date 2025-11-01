@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for adsplay-media-lab on 2025-11-01T12:26:00-03:00
+# fly.toml app configuration file generated for adsplay-media-lab-solitary-wind-283 on 2025-11-01T12:58:29-03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'adsplay-media-lab'
+app = 'adsplay-media-lab-solitary-wind-283'
 primary_region = 'gru'
 
 [build]
