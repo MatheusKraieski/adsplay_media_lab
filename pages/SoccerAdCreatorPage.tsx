@@ -51,7 +51,7 @@ const VideoDisplayAdCreatorPage: React.FC<VideoDisplayAdCreatorPageProps> = ({ o
         &larr; {t('common.backToProjects')}
       </button>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 max-h-[calc(100vh-9rem)] overflow-y-auto pr-2 custom-scrollbar">
           <VideoDisplayAdForm
             adData={adData}
             updateAdData={updateAdData}
