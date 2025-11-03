@@ -17,7 +17,7 @@ const AdCreatorForm: React.FC<AdCreatorFormProps> = ({ adData, updateAdData, onV
 
   return (
     <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-6">
-      <h3 className="text-xl font-bold">{t('form.title')}</h3>
+      <h3 className="text-lg font-bold">{t('form.title')}</h3>
       <div className="space-y-4">
         <Input 
           label={t('form.videoUrl')} 
@@ -42,7 +42,7 @@ const AdCreatorForm: React.FC<AdCreatorFormProps> = ({ adData, updateAdData, onV
 
       <hr className="border-gray-700" />
       
-      <h3 className="text-xl font-bold">{t('form.settingsTitle')}</h3>
+      <h3 className="text-lg font-bold">{t('form.settingsTitle')}</h3>
       <div className="space-y-4">
         <Select label={t('form.size')} value={adData.size} onChange={(e) => updateAdData('size', e.target.value as AdData['size'])}>
           <option value="300x250">300x250</option>
@@ -73,7 +73,7 @@ const AdCreatorForm: React.FC<AdCreatorFormProps> = ({ adData, updateAdData, onV
       <hr className="border-gray-700" />
 
       <div>
-        <h3 className="text-xl font-bold mb-4">{t('form.export.title')}</h3>
+        <h3 className="text-lg font-bold mb-4">{t('form.export.title')}</h3>
         <div className="space-y-2">
             <button onClick={() => onExport('dv360')} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
                 {t('form.export.html_dv360')}

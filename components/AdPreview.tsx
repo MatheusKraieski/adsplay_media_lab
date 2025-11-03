@@ -69,7 +69,7 @@ const AdPreview: React.FC<AdPreviewProps> = ({ adData, adRef }) => {
 
   return (
     <div className="flex flex-col items-center">
-        <h3 className="text-xl font-bold mb-4">{t('preview.title')}</h3>
+        <h3 className="text-lg font-bold mb-4">{t('preview.title')}</h3>
         <a href={adData.destinationUrl} target="_blank" rel="noopener noreferrer" className="block cursor-pointer">
         <div ref={adRef} className="relative overflow-hidden bg-black rounded-lg shadow-lg" style={{ width, height }}>
             {adData.videoContent ? (

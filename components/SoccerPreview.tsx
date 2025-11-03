@@ -90,7 +90,7 @@ const VideoDisplayAdPreview: React.FC<VideoDisplayAdPreviewProps> = ({ adData })
 
   return (
     <div className="flex flex-col items-center">
-        <h3 className="text-xl font-bold mb-4">{t('preview.title')}</h3>
+        <h3 className="text-lg font-bold mb-4">{t('preview.title')}</h3>
         <a href={adData.destinationUrl} target="_blank" rel="noopener noreferrer" className="block cursor-pointer">
             <div
               className="relative overflow-hidden bg-gray-900"
