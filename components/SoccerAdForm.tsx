@@ -6,7 +6,7 @@ import { Input, Select, FileUpload } from './FormControls';
 interface VideoDisplayAdFormProps {
   adData: VideoDisplayAdData;
   updateAdData: (field: keyof VideoDisplayAdData, value: any) => void;
-  onExport: () => void;
+  onExport: (platform: 'dv360' | 'gam') => void;
   onVideoUpload: (file: File) => void;
   onImageUpload: (file: File) => void;
 }
@@ -54,14 +54,46 @@ const VideoDisplayAdForm: React.FC<VideoDisplayAdFormProps> = ({
       </FormSection>
 
       <FormSection title={t('form.soccer.section.assets')}>
+        <Input 
+          label={t('form.soccer.videoUrl')}
+          type="url" 
+          placeholder="https://..." 
+          value={adData.videoContent || ''}
+          onChange={(e) => updateAdData('videoContent', e.target.value)}
+        />
+        <div className="flex items-center py-1">
+            <div className="flex-grow border-t border-gray-700"></div>
+            <span className="flex-shrink mx-4 text-gray-500 text-xs uppercase">{t('form.or')}</span>
+            <div className="flex-grow border-t border-gray-700"></div>
+        </div>
         <FileUpload id="video-upload" label={t('form.soccer.uploadVideo')} onChange={onVideoUpload} buttonText={t('form.upload')} accept="video/*" />
+        
+        <hr className="border-gray-700/50 !my-4" />
+        
+        <Input 
+          label={t('form.soccer.imageUrl')}
+          type="url" 
+          placeholder="https://..." 
+          value={adData.imageContent || ''}
+          onChange={(e) => updateAdData('imageContent', e.target.value)}
+        />
+        <div className="flex items-center py-1">
+            <div className="flex-grow border-t border-gray-700"></div>
+            <span className="flex-shrink mx-4 text-gray-500 text-xs uppercase">{t('form.or')}</span>
+            <div className="flex-grow border-t border-gray-700"></div>
+        </div>
         <FileUpload id="image-upload" label={t('form.soccer.uploadImage')} onChange={onImageUpload} buttonText={t('form.upload')} accept="image/*" />
         {hint && <p className="text-xs text-gray-400 -mt-2">{t('form.soccer.imageHint').replace('{size}', hint)}</p>}
       </FormSection>
-
-      <button onClick={onExport} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
-        {t('form.soccer.exportHtml')}
-      </button>
+      
+      <div className="space-y-2">
+        <button onClick={() => onExport('dv360')} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
+            {t('form.soccer.exportHtml_dv360')}
+        </button>
+        <button onClick={() => onExport('gam')} className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors">
+            {t('form.soccer.exportHtml_gam')}
+        </button>
+      </div>
     </div>
   );
 };

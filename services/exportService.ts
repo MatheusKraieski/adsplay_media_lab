@@ -1,8 +1,10 @@
-import { AdData, SliderAdData, VideoDisplayAdData, CarouselAdData } from './types';
+import { AdData, SliderAdData, VideoDisplayAdData, CarouselAdData } from '../types';
 
-const downloadFile = (filename: string, content: string) => {
+declare const JSZip: any;
+
+const downloadFile = (filename: string, content: string | Blob, type = 'text/html') => {
     const element = document.createElement('a');
-    const file = new Blob([content], { type: 'text/html' });
+    const file = content instanceof Blob ? content : new Blob([content], { type });
     element.href = URL.createObjectURL(file);
     element.download = filename;
     document.body.appendChild(element); // Required for this to work in FireFox
@@ -13,7 +15,8 @@ const downloadFile = (filename: string, content: string) => {
 // A very basic HTML template for video ads
 const createVideoAdHtml = (adData: AdData, platform: 'dv360' | 'gam'): string => {
     // In a real app, this would be a much more complex templating system.
-    const clicktag = platform === 'gam' ? '%%CLICK_URL_UNESC%%' : '{{PUB_CLKT}}';
+    const clicktagMacro = platform === 'gam' ? '%%CLICK_URL_UNESC%%' : '{{PUB_CLKT}}';
+    const clicktag = `${clicktagMacro}${adData.destinationUrl}`;
     const [width, height] = adData.size.split('x');
     return `
 <html>
@@ -32,7 +35,7 @@ const createVideoAdHtml = (adData: AdData, platform: 'dv360' | 'gam'): string =>
     </style>
 </head>
 <body>
-    <a href="${clicktag}${adData.destinationUrl}" target="_blank">
+    <a href="${clicktag}" target="_blank">
         <div class="ad-container">
             <video src="${adData.videoContent}" autoplay muted loop playsinline></video>
             <!-- Overlays would be added here in a real implementation -->
@@ -392,9 +395,27 @@ export const exportSliderAd = (adData: SliderAdData) => {
     downloadFile(`slider_ad_${adData.size}.html`, htmlContent);
 };
 
-const createVideoDisplayAdHtml = (adData: VideoDisplayAdData): string => {
+const dataURLtoBlob = (dataurl: string): Blob | null => {
+    const arr = dataurl.split(',');
+    if (arr.length < 2) return null;
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    if (!mimeMatch) return null;
+    const mime = mimeMatch[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+}
+
+const createVideoDisplayAdHtml = (adData: VideoDisplayAdData, platform: 'dv360' | 'gam', videoFileName?: string, imageFileName?: string): string => {
     const [width, height] = adData.size.split('x').map(Number);
-    const clicktag = '%%CLICK_URL_UNESC%%' + adData.destinationUrl;
+    const clicktagMacro = platform === 'gam' ? '%%CLICK_URL_UNESC%%' : '{{PUB_CLKT}}';
+    const clicktag = `${clicktagMacro}${adData.destinationUrl}`;
+    const videoSrc = videoFileName || adData.videoContent;
+    const imageSrc = imageFileName || adData.imageContent;
 
     let videoStyle = '';
     let imageStyle = '';
@@ -450,10 +471,10 @@ const createVideoDisplayAdHtml = (adData: VideoDisplayAdData): string => {
     <a href="${clicktag}" target="_blank">
         <div class="ad-container">
             <div class="video-wrapper" style="${videoStyle}">
-              <video src="${adData.videoContent}" style="width: 100%; height: 100%;" autoplay muted loop playsinline></video>
+              <video src="${videoSrc}" style="width: 100%; height: 100%;" autoplay muted loop playsinline></video>
             </div>
             <div class="image-wrapper" style="${imageStyle}">
-              <img src="${adData.imageContent}" style="width: 100%; height: 100%;" alt="" />
+              <img src="${imageSrc}" style="width: 100%; height: 100%;" alt="" />
             </div>
         </div>
     </a>
@@ -462,9 +483,60 @@ const createVideoDisplayAdHtml = (adData: VideoDisplayAdData): string => {
 };
 
 
-export const exportVideoDisplayAd = (adData: VideoDisplayAdData) => {
-    const htmlContent = createVideoDisplayAdHtml(adData);
-    downloadFile(`video_display_ad_${adData.size}.html`, htmlContent);
+export const exportVideoDisplayAd = async (adData: VideoDisplayAdData, platform: 'dv360' | 'gam') => {
+    if (platform === 'dv360' && adData.videoContent && adData.imageContent) {
+        const videoExt = (adData.videoContent.startsWith('data:video/')
+            ? adData.videoContent.substring(adData.videoContent.indexOf('/') + 1, adData.videoContent.indexOf(';'))
+            : adData.videoContent.split('.').pop()?.split('?')[0]) || 'mp4';
+        const videoFileName = `video.${videoExt}`;
+
+        const imageExt = (adData.imageContent.startsWith('data:image/')
+            ? adData.imageContent.substring(adData.imageContent.indexOf('/') + 1, adData.imageContent.indexOf(';'))
+            : adData.imageContent.split('.').pop()?.split('?')[0]) || 'png';
+        const imageFileName = `image.${imageExt}`;
+
+        const htmlContent = createVideoDisplayAdHtml(adData, 'dv360', videoFileName, imageFileName);
+
+        try {
+            const zip = new JSZip();
+            zip.file('index.html', htmlContent);
+
+            // Handle video asset
+            let videoBlob: Blob;
+            if (adData.videoContent.startsWith('data:')) {
+                const blob = dataURLtoBlob(adData.videoContent);
+                if (!blob) throw new Error('Failed to convert video data URL to Blob.');
+                videoBlob = blob;
+            } else {
+                const response = await fetch(adData.videoContent);
+                if (!response.ok) throw new Error(`Failed to fetch video: ${response.statusText}`);
+                videoBlob = await response.blob();
+            }
+            zip.file(videoFileName, videoBlob);
+
+            // Handle image asset
+            let imageBlob: Blob;
+            if (adData.imageContent.startsWith('data:')) {
+                const blob = dataURLtoBlob(adData.imageContent);
+                if (!blob) throw new Error('Failed to convert image data URL to Blob.');
+                imageBlob = blob;
+            } else {
+                const response = await fetch(adData.imageContent);
+                if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+                imageBlob = await response.blob();
+            }
+            zip.file(imageFileName, imageBlob);
+
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            downloadFile(`video_display_ad_${adData.size}_dv360.zip`, zipBlob, 'application/zip');
+        } catch (error) {
+            console.error("Error creating zip file:", error);
+            alert("Failed to create zip file. This may be due to a network issue or CORS policy on the asset servers. Please try uploading assets instead of using URLs.");
+        }
+    } else {
+        const htmlContent = createVideoDisplayAdHtml(adData, 'gam');
+        downloadFile(`video_display_ad_${adData.size}_gam.html`, htmlContent);
+    }
 };
 
 export const exportCarouselAd = (adData: CarouselAdData) => {

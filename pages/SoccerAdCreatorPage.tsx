@@ -32,8 +32,8 @@ const VideoDisplayAdCreatorPage: React.FC<VideoDisplayAdCreatorPageProps> = ({ o
     setAdData(prev => ({ ...prev, [field]: value }));
   };
   
-  const handleExport = () => {
-    exportVideoDisplayAd(adData);
+  const handleExport = (platform: 'dv360' | 'gam') => {
+    exportVideoDisplayAd(adData, platform);
   };
 
   const handleImageUpload = async (field: keyof VideoDisplayAdData, file: File) => {
