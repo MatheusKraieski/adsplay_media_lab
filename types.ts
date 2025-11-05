@@ -4,6 +4,7 @@ export enum Page {
     SliderAd = 'slider-ad',
     VideoDisplayAd = 'video-display-ad',
     CarouselAd = 'carousel-ad',
+    CubeAd = 'cube-ad',
 }
   
 export type AdSize = '300x250' | '300x600' | '336x280';
@@ -97,4 +98,14 @@ export interface CarouselAdData {
     progressBarColor: string;
     autoPlay: boolean;
     playDuration: number;
+}
+
+export type CubeAdSize = '300x250' | '336x280';
+
+export interface CubeAdData {
+  size: CubeAdSize;
+  frontImage: string;
+  sideImage: string;
+  destinationUrl: string;
+  rotationSpeed: number; // in seconds
 }

@@ -12,7 +12,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ icon, title, description, onC
   return (
     <div
       onClick={onClick}
-      className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 flex flex-col items-start space-y-4 cursor-pointer hover:border-purple-500 hover:bg-gray-800 transition-all duration-300 group"
+      className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 flex flex-col items-start space-y-4 cursor-pointer hover:border-purple-500 hover:bg-gray-800 transition-all duration-300 group text-left"
     >
       <div className="text-purple-400 group-hover:text-purple-300 transition-colors duration-300">
         {icon}

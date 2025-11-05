@@ -7,6 +7,7 @@ import VideoAdCreatorPage from './pages/VideoAdCreatorPage';
 import SliderAdCreatorPage from './pages/SliderAdCreatorPage';
 import VideoDisplayAdCreatorPage from './pages/SoccerAdCreatorPage';
 import CarouselAdCreatorPage from './pages/CarouselAdCreatorPage';
+import CubeAdCreatorPage from './pages/CubeAdCreatorPage';
 import { LanguageProvider } from './contexts/LanguageContext';
 
 const App: React.FC = () => {
@@ -30,6 +31,8 @@ const App: React.FC = () => {
         return <VideoDisplayAdCreatorPage onBack={handleBackToHome} />;
       case Page.CarouselAd:
         return <CarouselAdCreatorPage onBack={handleBackToHome} />;
+      case Page.CubeAd:
+        return <CubeAdCreatorPage onBack={handleBackToHome} />;
       case Page.Home:
       default:
         return <HomePage onSelectProject={handleSelectProject} />;

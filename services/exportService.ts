@@ -1,4 +1,4 @@
-import { AdData, SliderAdData, VideoDisplayAdData, CarouselAdData } from '../types';
+import { AdData, SliderAdData, VideoDisplayAdData, CarouselAdData, CubeAdData } from '../types';
 
 declare const JSZip: any;
 
@@ -552,4 +552,138 @@ export const exportCarouselAd = (adData: CarouselAdData) => {
       </body>
     </html>`;
     downloadFile(`carousel_ad_${adData.size}.html`, htmlContent);
+};
+
+const createCubeAdHtml = (adData: CubeAdData, assetPaths?: { frontImage: string, sideImage: string }): string => {
+    const [width, height] = adData.size.split('x').map(Number);
+    const translateZ = width / 2;
+    const clicktag = `%%CLICK_URL_UNESC%%${adData.destinationUrl}`;
+    
+    const frontSrc = assetPaths ? assetPaths.frontImage : adData.frontImage;
+    const sideSrc = assetPaths ? assetPaths.sideImage : adData.sideImage;
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ad.size" content="width=${width},height=${height}">
+    <style>
+        body, html { margin: 0; padding: 0; }
+        .ad-container {
+            width: ${width}px;
+            height: ${height}px;
+            cursor: pointer;
+            -webkit-font-smoothing: antialiased;
+        }
+        .scene {
+            width: 100%;
+            height: 100%;
+            perspective: ${width * 4}px;
+        }
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateY(-25deg);
+            animation: rotate-cube ${adData.rotationSpeed}s infinite linear;
+        }
+        .cube-face {
+            position: absolute;
+            width: ${width}px;
+            height: ${height}px;
+            background-size: cover;
+            background-position: center;
+        }
+        .front {
+            background-image: url(${frontSrc});
+            transform: rotateY(0deg) translateZ(${translateZ}px);
+        }
+        .right {
+            background-image: url(${sideSrc});
+            transform: rotateY(90deg) translateZ(${translateZ}px);
+        }
+        .back {
+            background-image: url(${frontSrc});
+            transform: rotateY(180deg) translateZ(${translateZ}px);
+        }
+        .left {
+            background-image: url(${sideSrc});
+            transform: rotateY(-90deg) translateZ(${translateZ}px);
+        }
+        @keyframes rotate-cube {
+            0% { transform: rotateY(-25deg); }
+            100% { transform: rotateY(-385deg); }
+        }
+    </style>
+</head>
+<body>
+    <a href="${clicktag}" target="_blank">
+        <div class="ad-container">
+            <div class="scene">
+                <div class="cube">
+                    <div class="cube-face front"></div>
+                    <div class="cube-face right"></div>
+                    <div class="cube-face back"></div>
+                    <div class="cube-face left"></div>
+                </div>
+            </div>
+        </div>
+    </a>
+</body>
+</html>
+    `;
+}
+
+export const exportCubeAdHtml = (adData: CubeAdData) => {
+    const htmlContent = createCubeAdHtml(adData);
+    downloadFile(`cube_ad_${adData.size}.html`, htmlContent);
+};
+
+export const exportCubeAdZip = async (adData: CubeAdData) => {
+    try {
+        const getFileExtension = (url: string, mimePrefix: string) => (url.startsWith(`data:${mimePrefix}/`)
+            ? url.substring(url.indexOf('/') + 1, url.indexOf(';'))
+            : url.split('.').pop()?.split('?')[0]) || 'png';
+
+        const frontExt = getFileExtension(adData.frontImage, 'image');
+        const sideExt = getFileExtension(adData.sideImage, 'image');
+
+        const frontFileName = `front.${frontExt}`;
+        const sideFileName = `side.${sideExt}`;
+
+        const htmlContent = createCubeAdHtml(adData, {
+            frontImage: frontFileName,
+            sideImage: sideFileName,
+        });
+
+        const zip = new JSZip();
+        zip.file('index.html', htmlContent);
+
+        const fetchAndAddAsset = async (url: string, fileName: string) => {
+            let blob: Blob;
+            if (url.startsWith('data:')) {
+                const result = dataURLtoBlob(url);
+                if (!result) throw new Error(`Failed to convert data URL to Blob for ${fileName}.`);
+                blob = result;
+            } else {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to fetch ${fileName}: ${response.statusText}`);
+                blob = await response.blob();
+            }
+            zip.file(fileName, blob);
+        };
+
+        await fetchAndAddAsset(adData.frontImage, frontFileName);
+        await fetchAndAddAsset(adData.sideImage, sideFileName);
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        downloadFile(`cube_ad_${adData.size}.zip`, zipBlob, 'application/zip');
+
+    } catch (error) {
+        console.error("Error creating zip file for Cube Ad:", error);
+        alert("Failed to create zip file. This may be due to a network issue or CORS policy on the asset servers. Please try uploading assets instead of using URLs.");
+    }
 };

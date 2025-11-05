@@ -5,6 +5,7 @@ import { PlayIcon } from '../components/icons/PlayIcon';
 import { SliderIcon } from '../components/icons/SliderIcon';
 import { SoccerIcon } from '../components/icons/SoccerIcon';
 import { CarouselIcon } from '../components/icons/CarouselIcon';
+import { CubeIcon } from '../components/icons/CubeIcon';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HomePageProps {
@@ -38,6 +39,12 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectProject }) => {
       icon: <CarouselIcon />,
       title: t('project.carousel.title'),
       description: t('project.carousel.description'),
+    },
+    {
+      page: Page.CubeAd,
+      icon: <CubeIcon />,
+      title: t('project.cube.title'),
+      description: t('project.cube.description'),
     }
   ];
 
